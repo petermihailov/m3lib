@@ -1,0 +1,28 @@
+{
+  "name": "m3lib",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "clean": "rm -f index.js",
+    "build": "babel src --ignore api.test.js -o index.js",
+    "test": "jest",
+    "flow": "flow"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-minify": "^0.3.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-flow": "^6.23.0",
+    "flow-bin": "^0.68.0",
+    "flow-typed": "^2.3.0",
+    "jest": "^22.4.2"
+  },
+  "babel": {
+    "presets": [
+      "env",
+      "flow",
+      "minify"
+    ]
+  }
+}

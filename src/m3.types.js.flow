@@ -1,0 +1,36 @@
+// @flow
+export type Level = {
+  rows: number,
+  cols: number,
+  types: number
+}
+
+export type Grid = Array<Array<Piece>>
+
+export type Gravity = | "up" | "down" | "left" | "right"
+
+export type Piece = null | {
+  type: number
+}
+
+export type Coord = {
+  row: number,
+  col: number
+}
+
+export type Move = {
+  from: Coord,
+  to: Coord
+}
+
+export type Match = {
+  row: number,
+  col: number,
+  length: number,
+  horizontal: boolean
+}
+
+export type Pattern = {
+  mustHave: Array<Coord>;
+  needOne: Array<Coord>;
+}
