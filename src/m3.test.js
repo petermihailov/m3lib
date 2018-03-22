@@ -43,6 +43,44 @@ describe('get piece', () => {
   tests.forEach((t) => test(t.name, () => expect(m3.getPiece(grid, t.coord)).toEqual(t.expected)));
 });
 
+describe('check equal pieces', () => {
+  const coords = [
+    {
+      row: 0,
+      col: 0
+    }, {
+      row: 0,
+      col: 1
+    }
+  ];
+
+  const cases = [
+    {
+      name: 'pieces are equal',
+      grid: [
+        [{type: 0}, {type: 0}]
+      ],
+      expected: true
+    },
+    {
+      name: 'pieces are not equal',
+      grid: [
+        [{type: 1}, {type: 0}]
+      ],
+      expected: false
+    },
+    {
+      name: 'pieces are not equal with undefined',
+      grid: [
+        [{type: 0}]
+      ],
+      expected: false
+    }
+  ];
+
+  cases.forEach((c) => test(c.name, () => expect(m3.isEqualType(c.grid, coords[0], coords[1])).toEqual(c.expected)));
+});
+
 describe('get moves', () => {
   const cases = [
     {

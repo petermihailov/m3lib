@@ -39,6 +39,13 @@ export const getPiece = (grid: Grid, coord: Coord, offset?: Coord = {row: 0, col
   return row && row[coord.col + offset.col];
 };
 
+export const isEqualType = (grid: Grid, c1: Coord, c2: Coord): boolean => {
+  const p1 = getPiece(grid, c1);
+  const p2 = getPiece(grid, c2);
+
+  return Boolean(p1 && p2 && p1.type === p2.type);
+};
+
 export const getMoves = (grid: Grid): Array<Move> => {
   const moves = [];
 
@@ -231,7 +238,7 @@ export const fillVoid = (grid: Grid, types: number): Grid => {
 };
 
 export const createLevel = ({rows, cols, types}: Level): Grid => {
-  let grid = [];
+  const grid = [];
 
   const loop = () => {
     for (let row = 0; row < rows; row++) {
