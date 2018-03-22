@@ -39,6 +39,8 @@ export const getPiece = (grid: Grid, coord: Coord, offset?: Coord = {row: 0, col
   return row && row[coord.col + offset.col];
 };
 
+export const isNeighbor = (c1: Coord, c2: Coord): boolean => Math.abs((c1.row - c2.row) + (c1.col - c2.col)) === 1;
+
 export const isEqualType = (grid: Grid, c1: Coord, c2: Coord): boolean => {
   const p1 = getPiece(grid, c1);
   const p2 = getPiece(grid, c2);

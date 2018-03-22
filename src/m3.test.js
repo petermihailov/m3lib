@@ -81,6 +81,91 @@ describe('check equal pieces', () => {
   cases.forEach((c) => test(c.name, () => expect(m3.isEqualType(c.grid, coords[0], coords[1])).toEqual(c.expected)));
 });
 
+describe('check if pieces are neighbors', () => {
+  const cases = [
+    {
+      name: 'neighbor on the top',
+      coords: [
+        {
+          row: 1,
+          col: 0
+        }, {
+          row: 0,
+          col: 0
+        }
+      ],
+      expected: true
+    },
+    {
+      name: 'neighbor on the bottom',
+      coords: [
+        {
+          row: 0,
+          col: 0
+        }, {
+          row: 1,
+          col: 0
+        }
+      ],
+      expected: true
+    },
+    {
+      name: 'neighbor on the left',
+      coords: [
+        {
+          row: 0,
+          col: 1
+        }, {
+          row: 0,
+          col: 0
+        }
+      ],
+      expected: true
+    },
+    {
+      name: 'neighbor on the right',
+      coords: [
+        {
+          row: 0,
+          col: 0
+        }, {
+          row: 0,
+          col: 1
+        }
+      ],
+      expected: true
+    },
+    {
+      name: 'pieces are not neighbors',
+      coords: [
+        {
+          row: 0,
+          col: 0
+        }, {
+          row: 1,
+          col: 1
+        }
+      ],
+      expected: false
+    },
+    {
+      name: 'himself is not a neighbor',
+      coords: [
+        {
+          row: 0,
+          col: 1
+        }, {
+          row: 0,
+          col: 1
+        }
+      ],
+      expected: false
+    }
+  ];
+
+  cases.forEach((c) => test(c.name, () => expect(m3.isNeighbor(c.coords[0], c.coords[1])).toEqual(c.expected)));
+});
+
 describe('get moves', () => {
   const cases = [
     {
