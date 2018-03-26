@@ -255,10 +255,15 @@ describe('get matches', () => {
     {
       name: 'get more than 3 horizontal match',
       grid: [
-        [{type: 1}, {type: 1}, {type: 1}, {type: 1}]
+        [{type: 5}, {type: 1}, {type: 1}, {type: 4}, {type: 5}, {type: 4}],
+        [{type: 5}, {type: 1}, {type: 3}, {type: 1}, {type: 4}, {type: 1}],
+        [{type: 4}, {type: 3}, {type: 3}, {type: 5}, {type: 3}, {type: 1}],
+        [{type: 5}, {type: 1}, {type: 1}, {type: 2}, {type: 1}, {type: 4}],
+        [{type: 5}, {type: 4}, {type: 2}, {type: 1}, {type: 3}, {type: 3}],
+        [{type: 4}, {type: 5}, {type: 3}, {type: 3}, {type: 3}, {type: 1}]
       ],
       expected: [
-        {'row': 0, 'col': 0, 'length': 4, 'horizontal': true}
+        {'row': 5, 'col': 2, 'length': 3, 'horizontal': true}
       ]
     },
     {

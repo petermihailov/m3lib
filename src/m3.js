@@ -94,7 +94,7 @@ export const getMatches = (grid: Grid): Array<Match> => {
     for (let col = 0; col < colLength; col++) {
       let check = false;
 
-      if (row === colLength - 1) {
+      if (col === colLength - 1) {
         check = true;
       } else {
         const p1 = getPiece(grid, {row, col});
@@ -130,7 +130,7 @@ export const getMatches = (grid: Grid): Array<Match> => {
     for (let row = 0; row < rowLength; row++) {
       let check = false;
 
-      if (row === grid.length - 1) {
+      if (row === grid.length) {
         check = true;
       } else {
         const p1 = getPiece(grid, {row, col});
