@@ -1,1 +1,281 @@
-'use strict';Object.defineProperty(exports,'__esModule',{value:!0});function _toConsumableArray(a){if(Array.isArray(a)){for(var b=0,c=Array(a.length);b<a.length;b++)c[b]=a[b];return c}return Array.from(a)}var PATTERNS=[{mustHave:[{row:0,col:1},{row:0,col:2}],needOne:[{row:0,col:-1},{row:-1,col:0},{row:1,col:0}]},{mustHave:[{row:0,col:-1},{row:0,col:-2}],needOne:[{row:0,col:1},{row:-1,col:0},{row:1,col:0}]},{mustHave:[{row:1,col:0},{row:2,col:0}],needOne:[{row:-1,col:0},{row:0,col:-1},{row:0,col:1}]},{mustHave:[{row:-1,col:0},{row:-2,col:0}],needOne:[{row:1,col:0},{row:0,col:-1},{row:0,col:1}]},{mustHave:[{row:0,col:-1},{row:0,col:1}],needOne:[{row:-1,col:0},{row:1,col:0}]},{mustHave:[{row:-1,col:0},{row:1,col:0}],needOne:[{row:0,col:-1},{row:0,col:1}]}],forEach=function(a,b){for(var c=0;c<a.length;c++)for(var d=0;d<a[c].length;d++)b({row:c,col:d},a[c][d])},copyGrid=function(a){return a.map(function(a){return[].concat(_toConsumableArray(a))})},getRandomPiece=function(a){return{type:Math.floor(Math.random()*a)+1}},getPiece=exports.getPiece=function(a,b){var c=2<arguments.length&&arguments[2]!==void 0?arguments[2]:{row:0,col:0},d=a[b.row+c.row];return d&&d[b.col+c.col]},isNeighbor=exports.isNeighbor=function(a,b){return 1===Math.abs(a.row-b.row+(a.col-b.col))},isEqualType=exports.isEqualType=function(a,b,c){var d=getPiece(a,b),e=getPiece(a,c);return!!(d&&e&&d.type===e.type)},getMoves=exports.getMoves=function(a){var b=[];return forEach(a,function(c){PATTERNS.forEach(function(d){var e,f=d.mustHave.every(function(b){var d=getPiece(a,c,b);if(d)return void 0===e&&(e=d.type),e===d.type});if(f)return d.needOne.forEach(function(d){var f={row:c.row+d.row,col:c.col+d.col},g=getPiece(a,f);g&&e===g.type&&b.push({from:c,to:f})})})}),b},getMatches=exports.getMatches=function(a){for(var b=[],c=0;c<a.length;c++)for(var d,e=1,f=a[c].length,g=0;g<f;g++){if(d=!1,g===f-1)d=!0;else{var l=getPiece(a,{row:c,col:g}),m=getPiece(a,{row:c,col:g},{row:0,col:1});l&&m&&l.type===m.type?e+=1:d=!0}d&&(3<=e&&b.push({row:c,col:g+1-e,length:e,horizontal:!0}),e=1)}for(var n=0;n<a[0].length;n++)for(var h,i=a.length,j=1,k=0;k<i;k++){if(h=!1,k===a.length)h=!0;else{var o=getPiece(a,{row:k,col:n}),p=getPiece(a,{row:k,col:n},{row:1,col:0});o&&p&&o.type===p.type?j+=1:h=!0}h&&(3<=j&&b.push({row:k+1-j,col:n,length:j,horizontal:!1}),j=1)}return b},removeMatches=exports.removeMatches=function(a,b){var c=copyGrid(a);return b.forEach(function(a){if(a.horizontal)for(var b=0;b<a.length;b++)c[a.row][a.col+b]=null;else for(var d=0;d<a.length;d++)c[a.row+d][a.col]=null}),c},swap=exports.swap=function(a,b){var c=copyGrid(a);return c[b.to.row][b.to.col]=a[b.from.row][b.from.col],c[b.from.row][b.from.col]=a[b.to.row][b.to.col],c},applyGravity=exports.applyGravity=function(a){var b=1<arguments.length&&void 0!==arguments[1]?arguments[1]:'down',c=copyGrid(a),d={up:{col:0,row:1},down:{col:0,row:-1},left:{col:1,row:0},right:{col:-1,row:0}};return forEach(a,function(a){for(var e=a.row,f=a.col,g={from:{row:e,col:f},to:{row:e+d[b].row,col:f+d[b].col}},h=getPiece(c,g.from),i=getPiece(c,g.to);null===h&&i;)c=swap(c,g),g.from=Object.assign({},g.to),g.to={row:g.from.row+d[b].row,col:g.from.col+d[b].col},h=getPiece(c,g.from),i=getPiece(c,g.to)}),c},fillVoid=exports.fillVoid=function(a,b){var c=copyGrid(a);return forEach(c,function(a,d){var e=a.row,f=a.col;null===d&&(c[e][f]=getRandomPiece(b))}),c},createLevel=exports.createLevel=function(a){for(var b=a.rows,c=a.cols,d=a.types,e=[],f=function(){for(var a=0;a<b;a++){e[a]=[];for(var f=0;f<c;f++)e[a][f]=getRandomPiece(d)}};0===getMoves(e).length||0<getMatches(e).length;)f();return e};
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+var PATTERNS = [{ mustHave: [{ row: 0, col: 1 }, { row: 0, col: 2 }], needOne: [{ row: 0, col: -1 }, { row: -1, col: 0 }, { row: 1, col: 0 }] }, { mustHave: [{ row: 0, col: -1 }, { row: 0, col: -2 }], needOne: [{ row: 0, col: 1 }, { row: -1, col: 0 }, { row: 1, col: 0 }] }, { mustHave: [{ row: 1, col: 0 }, { row: 2, col: 0 }], needOne: [{ row: -1, col: 0 }, { row: 0, col: -1 }, { row: 0, col: 1 }] }, { mustHave: [{ row: -1, col: 0 }, { row: -2, col: 0 }], needOne: [{ row: 1, col: 0 }, { row: 0, col: -1 }, { row: 0, col: 1 }] }, { mustHave: [{ row: 0, col: -1 }, { row: 0, col: 1 }], needOne: [{ row: -1, col: 0 }, { row: 1, col: 0 }] }, { mustHave: [{ row: -1, col: 0 }, { row: 1, col: 0 }], needOne: [{ row: 0, col: -1 }, { row: 0, col: 1 }] }];
+
+
+var forEach = function forEach(grid, cb) {
+  for (var row = 0; row < grid.length; row++) {
+    for (var col = 0; col < grid[row].length; col++) {
+      cb({ row: row, col: col }, grid[row][col]);
+    }
+  }
+};
+
+var copyGrid = function copyGrid(grid) {
+  return grid.map(function (row) {
+    return [].concat(_toConsumableArray(row));
+  });
+};
+
+var getRandomPiece = function getRandomPiece(types) {
+  return {
+    type: Math.floor(Math.random() * types) + 1
+  };
+};
+
+var getPiece = exports.getPiece = function getPiece(grid, coord) {
+  var offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : { row: 0, col: 0 };
+
+  var row = grid[coord.row + offset.row];
+
+  return row && row[coord.col + offset.col];
+};
+
+var isNeighbor = exports.isNeighbor = function isNeighbor(c1, c2) {
+  var dr = c1.row - c2.row;
+  var dc = c1.col - c2.col;
+
+  return Boolean(
+  // if vertical neighbors
+  Math.abs(dr) <= 1 &&
+  // if horizontal neighbors
+  Math.abs(dc) <= 1 &&
+  // cross pieces are not neighbors
+  Math.abs(dr + dc) === 1);
+};
+
+var isEqualType = exports.isEqualType = function isEqualType(grid, c1, c2) {
+  var p1 = getPiece(grid, c1);
+  var p2 = getPiece(grid, c2);
+
+  return Boolean(p1 && p2 && p1.type === p2.type);
+};
+
+var getMoves = exports.getMoves = function getMoves(grid) {
+  var moves = [];
+
+  forEach(grid, function (coord) {
+    PATTERNS.forEach(function (pattern) {
+      var type = void 0;
+
+      var checkPossibleMatch = pattern.mustHave.every(function (offset) {
+        var piece = getPiece(grid, coord, offset);
+
+        if (piece) {
+          if (type === undefined) {
+            type = piece.type;
+          }
+
+          return type === piece.type;
+        }
+      });
+
+      if (checkPossibleMatch) {
+        return pattern.needOne.forEach(function (offset) {
+          var coord2 = { row: coord.row + offset.row, col: coord.col + offset.col };
+          var piece = getPiece(grid, coord2);
+
+          if (piece && type === piece.type) {
+            moves.push({ from: coord, to: coord2 });
+          }
+        });
+      }
+    });
+  });
+
+  return moves;
+};
+
+var getMatches = exports.getMatches = function getMatches(grid) {
+  var matches = [];
+
+  // find horizontal matches
+  for (var row = 0; row < grid.length; row++) {
+    var matchLength = 1;
+    var colLength = grid[row].length;
+
+    for (var col = 0; col < colLength; col++) {
+      var check = false;
+
+      if (col === colLength - 1) {
+        check = true;
+      } else {
+        var p1 = getPiece(grid, { row: row, col: col });
+        var p2 = getPiece(grid, { row: row, col: col }, { row: 0, col: 1 });
+
+        if (p1 && p2 && p1.type === p2.type) {
+          matchLength += 1;
+        } else {
+          check = true;
+        }
+      }
+
+      if (check) {
+        if (matchLength >= 3) {
+          matches.push({
+            row: row,
+            col: col + 1 - matchLength,
+            length: matchLength,
+            horizontal: true
+          });
+        }
+
+        matchLength = 1;
+      }
+    }
+  }
+
+  // find vertical matches
+  for (var _col = 0; _col < grid[0].length; _col++) {
+    var rowLength = grid.length;
+    var _matchLength = 1;
+
+    for (var _row = 0; _row < rowLength; _row++) {
+      var _check = false;
+
+      if (_row === grid.length) {
+        _check = true;
+      } else {
+        var _p = getPiece(grid, { row: _row, col: _col });
+        var _p2 = getPiece(grid, { row: _row, col: _col }, { row: 1, col: 0 });
+
+        if (_p && _p2 && _p.type === _p2.type) {
+          _matchLength += 1;
+        } else {
+          _check = true;
+        }
+      }
+
+      if (_check) {
+        if (_matchLength >= 3) {
+          matches.push({
+            row: _row + 1 - _matchLength,
+            col: _col,
+            length: _matchLength,
+            horizontal: false
+          });
+        }
+
+        _matchLength = 1;
+      }
+    }
+  }
+
+  return matches;
+};
+
+var removeMatches = exports.removeMatches = function removeMatches(grid, matches) {
+  var gridCopy = copyGrid(grid);
+
+  matches.forEach(function (match) {
+    if (match.horizontal) {
+      for (var i = 0; i < match.length; i++) {
+        gridCopy[match.row][match.col + i] = null;
+      }
+    } else {
+      for (var _i = 0; _i < match.length; _i++) {
+        gridCopy[match.row + _i][match.col] = null;
+      }
+    }
+  });
+
+  return gridCopy;
+};
+
+var swap = exports.swap = function swap(grid, move) {
+  var gridCopy = copyGrid(grid);
+
+  gridCopy[move.to.row][move.to.col] = grid[move.from.row][move.from.col];
+  gridCopy[move.from.row][move.from.col] = grid[move.to.row][move.to.col];
+
+  return gridCopy;
+};
+
+var applyGravity = exports.applyGravity = function applyGravity(grid) {
+  var gravity = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'down';
+
+  var gridCopy = copyGrid(grid);
+
+  var offset = {
+    up: { col: 0, row: 1 },
+    down: { col: 0, row: -1 },
+    left: { col: 1, row: 0 },
+    right: { col: -1, row: 0 }
+  };
+
+  forEach(grid, function (_ref) {
+    var row = _ref.row,
+        col = _ref.col;
+
+    var move = {
+      from: { row: row, col: col },
+      to: {
+        row: row + offset[gravity].row,
+        col: col + offset[gravity].col
+      }
+    };
+
+    var p1 = getPiece(gridCopy, move.from);
+    var p2 = getPiece(gridCopy, move.to);
+
+    while (p1 === null && p2) {
+      gridCopy = swap(gridCopy, move);
+
+      move.from = Object.assign({}, move.to);
+      move.to = {
+        row: move.from.row + offset[gravity].row,
+        col: move.from.col + offset[gravity].col
+      };
+
+      p1 = getPiece(gridCopy, move.from);
+      p2 = getPiece(gridCopy, move.to);
+    }
+  });
+
+  return gridCopy;
+};
+
+var fillVoid = exports.fillVoid = function fillVoid(grid, types) {
+  var gridCopy = copyGrid(grid);
+
+  forEach(gridCopy, function (_ref2, piece) {
+    var row = _ref2.row,
+        col = _ref2.col;
+
+    if (piece === null) {
+      gridCopy[row][col] = getRandomPiece(types);
+    }
+  });
+
+  return gridCopy;
+};
+
+var createLevel = exports.createLevel = function createLevel(_ref3) {
+  var rows = _ref3.rows,
+      cols = _ref3.cols,
+      types = _ref3.types;
+
+  var grid = [];
+
+  var loop = function loop() {
+    for (var row = 0; row < rows; row++) {
+      grid[row] = [];
+
+      for (var col = 0; col < cols; col++) {
+        grid[row][col] = getRandomPiece(types);
+      }
+    }
+  };
+
+  while (getMoves(grid).length === 0 || getMatches(grid).length > 0) {
+    loop();
+  }
+
+  return grid;
+};
