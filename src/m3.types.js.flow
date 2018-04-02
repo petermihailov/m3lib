@@ -27,6 +27,7 @@ export type Match = {
   row: number,
   col: number,
   length: number,
+  type: number,
   horizontal: boolean
 }
 

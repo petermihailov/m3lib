@@ -100,7 +100,9 @@ export const getMatches = (grid: Grid): Array<Match> => {
 
   // find horizontal matches
   for (let row = 0; row < grid.length; row++) {
+    let type = null;
     let matchLength = 1;
+
     const colLength = grid[row].length;
 
     for (let col = 0; col < colLength; col++) {
@@ -113,6 +115,7 @@ export const getMatches = (grid: Grid): Array<Match> => {
         const p2 = getPiece(grid, {row, col}, {row: 0, col: 1});
 
         if (p1 && p2 && p1.type === p2.type) {
+          type = p1.type;
           matchLength += 1;
         } else {
           check = true;
@@ -124,11 +127,13 @@ export const getMatches = (grid: Grid): Array<Match> => {
           matches.push({
             row,
             col: col + 1 - matchLength,
+            type,
             length: matchLength,
             horizontal: true
           });
         }
 
+        type = null;
         matchLength = 1;
       }
     }
@@ -137,6 +142,7 @@ export const getMatches = (grid: Grid): Array<Match> => {
   // find vertical matches
   for (let col = 0; col < grid[0].length; col++) {
     const rowLength = grid.length;
+    let type = null;
     let matchLength = 1;
 
     for (let row = 0; row < rowLength; row++) {
@@ -149,6 +155,7 @@ export const getMatches = (grid: Grid): Array<Match> => {
         const p2 = getPiece(grid, {row, col}, {row: 1, col: 0});
 
         if (p1 && p2 && p1.type === p2.type) {
+          type = p1.type;
           matchLength += 1;
         } else {
           check = true;
@@ -160,11 +167,13 @@ export const getMatches = (grid: Grid): Array<Match> => {
           matches.push({
             row: row + 1 - matchLength,
             col,
+            type,
             length: matchLength,
             horizontal: false
           });
         }
 
+        type = null;
         matchLength = 1;
       }
     }

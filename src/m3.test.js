@@ -249,8 +249,8 @@ describe('get matches', () => {
         [{type: 0}, {type: 1}, {type: 0}],
       ],
       expected: [
-        {'row': 1, 'col': 0, 'length': 3, 'horizontal': true},
-        {'row': 0, 'col': 1, 'length': 3, 'horizontal': false},
+        {row: 1, col: 0, length: 3, type: 1, horizontal: true},
+        {row: 0, col: 1, length: 3, type: 1, horizontal: false},
       ]
     },
     {
@@ -262,7 +262,7 @@ describe('get matches', () => {
         [{type: 1}]
       ],
       expected: [
-        {'row': 0, 'col': 0, 'length': 4, 'horizontal': false}
+        {row: 0, col: 0, length: 4, type: 1, horizontal: false}
       ]
     },
     {
@@ -276,7 +276,7 @@ describe('get matches', () => {
         [{type: 4}, {type: 5}, {type: 3}, {type: 3}, {type: 3}, {type: 1}]
       ],
       expected: [
-        {'row': 5, 'col': 2, 'length': 3, 'horizontal': true}
+        {row: 5, col: 2, length: 3, type: 3, horizontal: true}
       ]
     },
     {
