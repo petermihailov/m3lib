@@ -97,7 +97,9 @@ var getMatches = exports.getMatches = function getMatches(grid) {
 
   // find horizontal matches
   for (var row = 0; row < grid.length; row++) {
+    var type = null;
     var matchLength = 1;
+
     var colLength = grid[row].length;
 
     for (var col = 0; col < colLength; col++) {
@@ -110,6 +112,7 @@ var getMatches = exports.getMatches = function getMatches(grid) {
         var p2 = getPiece(grid, { row: row, col: col }, { row: 0, col: 1 });
 
         if (p1 && p2 && p1.type === p2.type) {
+          type = p1.type;
           matchLength += 1;
         } else {
           check = true;
@@ -121,11 +124,13 @@ var getMatches = exports.getMatches = function getMatches(grid) {
           matches.push({
             row: row,
             col: col + 1 - matchLength,
+            type: type,
             length: matchLength,
             horizontal: true
           });
         }
 
+        type = null;
         matchLength = 1;
       }
     }
@@ -134,6 +139,7 @@ var getMatches = exports.getMatches = function getMatches(grid) {
   // find vertical matches
   for (var _col = 0; _col < grid[0].length; _col++) {
     var rowLength = grid.length;
+    var _type = null;
     var _matchLength = 1;
 
     for (var _row = 0; _row < rowLength; _row++) {
@@ -146,6 +152,7 @@ var getMatches = exports.getMatches = function getMatches(grid) {
         var _p2 = getPiece(grid, { row: _row, col: _col }, { row: 1, col: 0 });
 
         if (_p && _p2 && _p.type === _p2.type) {
+          _type = _p.type;
           _matchLength += 1;
         } else {
           _check = true;
@@ -157,11 +164,13 @@ var getMatches = exports.getMatches = function getMatches(grid) {
           matches.push({
             row: _row + 1 - _matchLength,
             col: _col,
+            type: _type,
             length: _matchLength,
             horizontal: false
           });
         }
 
+        _type = null;
         _matchLength = 1;
       }
     }
