@@ -160,7 +160,20 @@ describe('check if pieces are neighbors', () => {
         }
       ],
       expected: false
-    }
+    },
+    {
+      name: 'cross pieces are not neighbors',
+      coords: [
+        {
+          row: 0,
+          col: 1
+        }, {
+          row: 2,
+          col: 0
+        }
+      ],
+      expected: false
+    },
   ];
 
   cases.forEach((c) => test(c.name, () => expect(m3.isNeighbor(c.coords[0], c.coords[1])).toEqual(c.expected)));

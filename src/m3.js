@@ -39,7 +39,19 @@ export const getPiece = (grid: Grid, coord: Coord, offset?: Coord = {row: 0, col
   return row && row[coord.col + offset.col];
 };
 
-export const isNeighbor = (c1: Coord, c2: Coord): boolean => Math.abs((c1.row - c2.row) + (c1.col - c2.col)) === 1;
+export const isNeighbor = (c1: Coord, c2: Coord): boolean => {
+  const dr = c1.row - c2.row;
+  const dc = c1.col - c2.col;
+
+  return Boolean(
+    // if vertical neighbors
+    Math.abs(dr) <= 1 &&
+    // if horizontal neighbors
+    Math.abs(dc) <= 1 &&
+    // cross pieces are not neighbors
+    Math.abs(dr + dc) === 1
+  );
+};
 
 export const isEqualType = (grid: Grid, c1: Coord, c2: Coord): boolean => {
   const p1 = getPiece(grid, c1);
