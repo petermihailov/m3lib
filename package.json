@@ -1,25 +1,41 @@
 {
   "name": "m3lib",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "main": "index.js",
+  "author": {
+    "name": "Peter Mihailov",
+    "email": "usernameispeter@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petermihailov/m3lib.git"
+  },
   "scripts": {
-    "clean": "rm -f index.js",
-    "build": "babel src --ignore m3.test.js -o index.js",
+    "build": "babel src -o index.js --no-comments",
+    "format": "prettier --write 'src/**/*.js'",
     "test": "jest",
     "flow": "flow"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-flow": "^6.23.0",
-    "flow-bin": "^0.71.0",
-    "jest": "^22.4.3"
+    "@babel/cli": "^7.1.5",
+    "@babel/core": "^7.1.6",
+    "@babel/preset-flow": "^7.0.0",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^23.6.0",
+    "babel-preset-minify": "^0.5.0",
+    "flow-bin": "^0.87.0",
+    "jest": "^23.6.0",
+    "prettier": "1.15.2",
+    "regenerator-runtime": "^0.13.1"
   },
   "babel": {
+    "ignore": [
+      "**/*.test.js"
+    ],
     "presets": [
-      "env",
-      "flow"
+      "@babel/preset-flow",
+      "minify"
     ]
   }
 }

@@ -1,398 +1,432 @@
-import * as m3 from './m3';
+const M3 = require('./m3');
 
 test('swap pieces', () => {
-  const cases = [
+  const tests = [
     {
-      grid: [
-        [{type: 1}, {type: 0}]
-      ],
+      m3: new M3({
+        width: 2,
+        height: 1,
+        grid: [{ type: 1 }, { type: 0 }],
+      }),
+      expected: [{ type: 0 }, { type: 1 }],
       move: {
-        from: {row: 0, col: 0},
-        to: {row: 0, col: 1}
+        from: { y: 0, x: 0 },
+        to: { y: 0, x: 1 },
       },
-      expected: [
-        [{type: 0}, {type: 1}],
-      ]
-    }
+    },
   ];
 
-  cases.forEach((c) => expect(m3.swap(c.grid, c.move)).toEqual(c.expected));
+  tests.forEach(({ m3, move, expected }) => {
+    m3.swap(move);
+    expect(m3.grid).toEqual(expected);
+  });
 });
 
 describe('get piece', () => {
-  const grid = [[{type: 1}]];
+  const m3 = new M3({ grid: [{ type: 1 }], width: 1, height: 1 });
 
   const tests = [
     {
       name: 'piece exists',
-      coord: {row: 0, col: 0},
-      expected: {'type': 1}
+      coord: { y: 0, x: 0 },
+      expected: { type: 1 },
     },
     {
       name: 'piece not exists (no exists row)',
-      coord: {row: 1, col: 0},
-      expected: undefined
+      coord: { y: 1, x: 0 },
+      expected: undefined,
     },
     {
       name: 'piece not exists (no exists col)',
-      coord: {row: 0, col: 1},
-      expected: undefined
-    }
-  ];
-
-  tests.forEach((t) => test(t.name, () => expect(m3.getPiece(grid, t.coord)).toEqual(t.expected)));
-});
-
-describe('check equal pieces', () => {
-  const coords = [
-    {
-      row: 0,
-      col: 0
-    }, {
-      row: 0,
-      col: 1
-    }
-  ];
-
-  const cases = [
-    {
-      name: 'pieces are equal',
-      grid: [
-        [{type: 0}, {type: 0}]
-      ],
-      expected: true
+      coord: { y: 0, x: 1 },
+      expected: undefined,
     },
-    {
-      name: 'pieces are not equal',
-      grid: [
-        [{type: 1}, {type: 0}]
-      ],
-      expected: false
-    },
-    {
-      name: 'pieces are not equal with undefined',
-      grid: [
-        [{type: 0}]
-      ],
-      expected: false
-    }
   ];
 
-  cases.forEach((c) => test(c.name, () => expect(m3.isEqualType(c.grid, coords[0], coords[1])).toEqual(c.expected)));
+  tests.forEach(({ name, coord, expected }) => {
+    test(name, () => expect(m3.getPiece(coord)).toEqual(expected));
+  });
 });
 
 describe('check if pieces are neighbors', () => {
-  const cases = [
+  const m3 = new M3();
+  const tests = [
     {
       name: 'neighbor on the top',
-      coords: [
-        {
-          row: 1,
-          col: 0
-        }, {
-          row: 0,
-          col: 0
-        }
-      ],
-      expected: true
+      coords: [{ y: 1, x: 0 }, { y: 0, x: 0 }],
+      expected: true,
     },
     {
       name: 'neighbor on the bottom',
-      coords: [
-        {
-          row: 0,
-          col: 0
-        }, {
-          row: 1,
-          col: 0
-        }
-      ],
-      expected: true
+      coords: [{ y: 0, x: 0 }, { y: 1, x: 0 }],
+      expected: true,
     },
     {
       name: 'neighbor on the left',
-      coords: [
-        {
-          row: 0,
-          col: 1
-        }, {
-          row: 0,
-          col: 0
-        }
-      ],
-      expected: true
+      coords: [{ y: 0, x: 1 }, { y: 0, x: 0 }],
+      expected: true,
     },
     {
       name: 'neighbor on the right',
-      coords: [
-        {
-          row: 0,
-          col: 0
-        }, {
-          row: 0,
-          col: 1
-        }
-      ],
-      expected: true
+      coords: [{ y: 0, x: 0 }, { y: 0, x: 1 }],
+      expected: true,
     },
     {
       name: 'pieces are not neighbors',
-      coords: [
-        {
-          row: 0,
-          col: 0
-        }, {
-          row: 1,
-          col: 1
-        }
-      ],
-      expected: false
+      coords: [{ y: 0, x: 0 }, { y: 1, x: 1 }],
+      expected: false,
     },
     {
       name: 'himself is not a neighbor',
-      coords: [
-        {
-          row: 0,
-          col: 1
-        }, {
-          row: 0,
-          col: 1
-        }
-      ],
-      expected: false
+      coords: [{ y: 0, x: 1 }, { y: 0, x: 1 }],
+      expected: false,
     },
     {
       name: 'cross pieces are not neighbors',
-      coords: [
-        {
-          row: 0,
-          col: 1
-        }, {
-          row: 2,
-          col: 0
-        }
-      ],
-      expected: false
+      coords: [{ y: 0, x: 1 }, { y: 2, x: 0 }],
+      expected: false,
     },
   ];
 
-  cases.forEach((c) => test(c.name, () => expect(m3.isNeighbor(c.coords[0], c.coords[1])).toEqual(c.expected)));
+  tests.forEach(({ name, coords, expected }) =>
+    test(name, () => {
+      expect(m3.isNeighbor(coords[0], coords[1])).toEqual(expected);
+    }),
+  );
 });
 
 describe('get moves', () => {
-  const cases = [
+  const tests = [
     {
       name: 'moves to center',
-      grid: [
-        [{type: 0}, {type: 1}, {type: 0}],
-        [{type: 1}, {type: 0}, {type: 1}],
-        [{type: 0}, {type: 1}, {type: 0}]
+      m3: new M3({
+        width: 3,
+        height: 3,
+        grid: [
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+        ],
+      }),
+      expected: [
+        { from: { y: 0, x: 1 }, to: { y: 1, x: 1 } },
+        { from: { y: 1, x: 0 }, to: { y: 1, x: 1 } },
+        { from: { y: 1, x: 1 }, to: { y: 0, x: 1 } },
+        { from: { y: 1, x: 1 }, to: { y: 2, x: 1 } },
+        { from: { y: 1, x: 1 }, to: { y: 1, x: 0 } },
+        { from: { y: 1, x: 1 }, to: { y: 1, x: 2 } },
+        { from: { y: 1, x: 2 }, to: { y: 1, x: 1 } },
+        { from: { y: 2, x: 1 }, to: { y: 1, x: 1 } },
       ],
-      expect: [
-        {'from': {'row': 0, 'col': 1}, 'to': {'row': 1, 'col': 1}},
-        {'from': {'row': 1, 'col': 0}, 'to': {'row': 1, 'col': 1}},
-        {'from': {'row': 1, 'col': 1}, 'to': {'row': 0, 'col': 1}},
-        {'from': {'row': 1, 'col': 1}, 'to': {'row': 2, 'col': 1}},
-        {'from': {'row': 1, 'col': 1}, 'to': {'row': 1, 'col': 0}},
-        {'from': {'row': 1, 'col': 1}, 'to': {'row': 1, 'col': 2}},
-        {'from': {'row': 1, 'col': 2}, 'to': {'row': 1, 'col': 1}},
-        {'from': {'row': 2, 'col': 1}, 'to': {'row': 1, 'col': 1}}
-      ]
     },
     {
       name: 'vertical moves',
-      grid: [
-        [{type: 0}, {type: 1}],
-        [{type: 1}, {type: 0}],
-        [{type: 1}, {type: 0}],
-        [{type: 0}, {type: 1}]
+      m3: new M3({
+        width: 2,
+        height: 4,
+        grid: [
+          { type: 0 },
+          { type: 1 },
+          { type: 1 },
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+          { type: 0 },
+          { type: 1 },
+        ],
+      }),
+      expected: [
+        { from: { y: 0, x: 0 }, to: { y: 0, x: 1 } },
+        { from: { y: 0, x: 1 }, to: { y: 0, x: 0 } },
+        { from: { y: 3, x: 0 }, to: { y: 3, x: 1 } },
+        { from: { y: 3, x: 1 }, to: { y: 3, x: 0 } },
       ],
-      expect: [
-        {'from': {'row': 0, 'col': 0}, 'to': {'row': 0, 'col': 1}},
-        {'from': {'row': 0, 'col': 1}, 'to': {'row': 0, 'col': 0}},
-        {'from': {'row': 3, 'col': 0}, 'to': {'row': 3, 'col': 1}},
-        {'from': {'row': 3, 'col': 1}, 'to': {'row': 3, 'col': 0}}
-      ]
     },
     {
       name: 'horizontal moves',
-      grid: [
-        [{type: 0}, {type: 1}, {type: 1}, {type: 0}],
-        [{type: 1}, {type: 0}, {type: 0}, {type: 1}]
+      m3: new M3({
+        width: 4,
+        height: 2,
+        grid: [
+          { type: 0 },
+          { type: 1 },
+          { type: 1 },
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+          { type: 0 },
+          { type: 1 },
+        ],
+      }),
+      expected: [
+        { from: { y: 0, x: 0 }, to: { y: 1, x: 0 } },
+        { from: { y: 0, x: 3 }, to: { y: 1, x: 3 } },
+        { from: { y: 1, x: 0 }, to: { y: 0, x: 0 } },
+        { from: { y: 1, x: 3 }, to: { y: 0, x: 3 } },
       ],
-      expect: [
-        {'from': {'row': 0, 'col': 0}, 'to': {'row': 1, 'col': 0}},
-        {'from': {'row': 0, 'col': 3}, 'to': {'row': 1, 'col': 3}},
-        {'from': {'row': 1, 'col': 0}, 'to': {'row': 0, 'col': 0}},
-        {'from': {'row': 1, 'col': 3}, 'to': {'row': 0, 'col': 3}}
-      ]
     },
     {
       name: 'no moves',
-      grid: [
-        [{type: 0}, {type: 1}, {type: 0}]
-      ],
-      expect: []
-    }
+      m3: new M3({
+        width: 3,
+        height: 1,
+        grid: [{ type: 0 }, { type: 1 }, { type: 0 }],
+      }),
+      expected: [],
+    },
   ];
 
-  cases.forEach((c) => test(c.name, () => expect(m3.getMoves(c.grid)).toEqual(c.expect)));
+  tests.forEach(({ name, m3, expected }) =>
+    test(name, () => {
+      expect(m3.getMoves()).toEqual(expected);
+    }),
+  );
 });
 
 describe('get matches', () => {
-  const cases = [
+  const tests = [
     {
       name: 'get horizontal and vertical matches',
-      grid: [
-        [{type: 0}, {type: 1}, {type: 0}],
-        [{type: 1}, {type: 1}, {type: 1}],
-        [{type: 0}, {type: 1}, {type: 0}],
-      ],
+      m3: new M3({
+        width: 3,
+        height: 3,
+        grid: [
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+          { type: 1 },
+          { type: 1 },
+          { type: 1 },
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+        ],
+      }),
       expected: [
-        {row: 1, col: 0, length: 3, type: 1, horizontal: true},
-        {row: 0, col: 1, length: 3, type: 1, horizontal: false},
-      ]
+        { y: 1, x: 0, length: 3, type: 1, horizontal: true },
+        { y: 0, x: 1, length: 3, type: 1, horizontal: false },
+      ],
     },
     {
       name: 'get more than 3 vertical match',
-      grid: [
-        [{type: 1}],
-        [{type: 1}],
-        [{type: 1}],
-        [{type: 1}]
-      ],
-      expected: [
-        {row: 0, col: 0, length: 4, type: 1, horizontal: false}
-      ]
+      m3: new M3({
+        width: 1,
+        height: 4,
+        grid: [{ type: 1 }, { type: 1 }, { type: 1 }, { type: 1 }],
+      }),
+      expected: [{ y: 0, x: 0, length: 4, type: 1, horizontal: false }],
     },
     {
       name: 'get more than 3 horizontal match',
-      grid: [
-        [{type: 5}, {type: 1}, {type: 1}, {type: 4}, {type: 5}, {type: 4}],
-        [{type: 5}, {type: 1}, {type: 3}, {type: 1}, {type: 4}, {type: 1}],
-        [{type: 4}, {type: 3}, {type: 3}, {type: 5}, {type: 3}, {type: 1}],
-        [{type: 5}, {type: 1}, {type: 1}, {type: 2}, {type: 1}, {type: 4}],
-        [{type: 5}, {type: 4}, {type: 2}, {type: 1}, {type: 3}, {type: 3}],
-        [{type: 4}, {type: 5}, {type: 3}, {type: 3}, {type: 3}, {type: 1}]
-      ],
-      expected: [
-        {row: 5, col: 2, length: 3, type: 3, horizontal: true}
-      ]
+      m3: new M3({
+        width: 6,
+        height: 6,
+        grid: [
+          { type: 5 },
+          { type: 1 },
+          { type: 1 },
+          { type: 4 },
+          { type: 5 },
+          { type: 4 },
+          { type: 5 },
+          { type: 1 },
+          { type: 3 },
+          { type: 1 },
+          { type: 4 },
+          { type: 1 },
+          { type: 4 },
+          { type: 3 },
+          { type: 3 },
+          { type: 5 },
+          { type: 3 },
+          { type: 1 },
+          { type: 5 },
+          { type: 1 },
+          { type: 1 },
+          { type: 2 },
+          { type: 1 },
+          { type: 4 },
+          { type: 5 },
+          { type: 4 },
+          { type: 2 },
+          { type: 1 },
+          { type: 3 },
+          { type: 3 },
+          { type: 4 },
+          { type: 5 },
+          { type: 3 },
+          { type: 3 },
+          { type: 3 },
+          { type: 1 },
+        ],
+      }),
+      expected: [{ y: 5, x: 2, length: 3, type: 3, horizontal: true }],
     },
     {
       name: 'no matches',
-      grid: [
-        [{type: 1}, {type: 1}, {type: 0}]
-      ],
-      expected: []
-    }
+      m3: new M3({
+        width: 3,
+        height: 1,
+        grid: [{ type: 1 }, { type: 1 }, { type: 0 }],
+      }),
+      expected: [],
+    },
   ];
 
-  cases.forEach((c) => test(c.name, () => expect(m3.getMatches(c.grid)).toEqual(c.expected)));
+  tests.forEach(({ name, m3, expected }) =>
+    test(name, () => {
+      expect(m3.getMatches()).toEqual(expected);
+    }),
+  );
 });
-
 describe('remove matches', () => {
-  const cases = [
+  const tests = [
     {
       name: 'remove horizontal and vertical matches',
-      grid: [
-        [{type: 1}, {type: 1}, {type: 1}],
-        [{type: 0}, {type: 1}, {type: 0}],
-        [{type: 0}, {type: 1}, {type: 0}]
-      ],
+      m3: new M3({
+        width: 3,
+        height: 3,
+        grid: [
+          { type: 1 },
+          { type: 1 },
+          { type: 1 },
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+        ],
+      }),
       matches: [
-        {'row': 0, 'col': 0, 'length': 3, 'horizontal': true},
-        {'row': 0, 'col': 1, 'length': 3, 'horizontal': false},
+        { y: 0, x: 0, length: 3, horizontal: true },
+        { y: 0, x: 1, length: 3, horizontal: false },
       ],
       expected: [
-        [null, null, null],
-        [{type: 0}, null, {type: 0}],
-        [{type: 0}, null, {type: 0}]
-      ]
+        null,
+        null,
+        null,
+        { type: 0 },
+        null,
+        { type: 0 },
+        { type: 0 },
+        null,
+        { type: 0 },
+      ],
     },
     {
       name: 'remove empty matches',
-      grid: [
-        [{type: 1}, {type: 1}, {type: 1}],
-        [{type: 0}, {type: 1}, {type: 0}],
-        [{type: 0}, {type: 1}, {type: 0}]
-      ],
+      m3: new M3({
+        width: 3,
+        height: 3,
+        grid: [
+          { type: 1 },
+          { type: 1 },
+          { type: 1 },
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+          { type: 0 },
+          { type: 1 },
+          { type: 0 },
+        ],
+      }),
       matches: [],
       expected: [
-        [{type: 1}, {type: 1}, {type: 1}],
-        [{type: 0}, {type: 1}, {type: 0}],
-        [{type: 0}, {type: 1}, {type: 0}]
-      ]
-    }
+        { type: 1 },
+        { type: 1 },
+        { type: 1 },
+        { type: 0 },
+        { type: 1 },
+        { type: 0 },
+        { type: 0 },
+        { type: 1 },
+        { type: 0 },
+      ],
+    },
   ];
 
-  cases.forEach((c) => {
-    test(c.name, () => expect(m3.removeMatches(c.grid, c.matches)).toEqual(c.expected));
+  tests.forEach(({ name, m3, matches, expected }) => {
+    m3.removeMatches(matches);
+    test(name, () => expect(m3.grid).toEqual(expected));
   });
 });
 
 describe('apply gravity', () => {
-  const grid = [
-    [{type: 1}, null],
-    [null, {type: 1}]
-  ];
-
-  const cases = [
+  const tests = [
     {
       name: 'pieces to up',
-      gravity: 'up',
-      expected: [
-        [{'type': 1}, {'type': 1}],
-        [null, null]
-      ]
+      m3: new M3({
+        gravity: 'up',
+        width: 2,
+        height: 2,
+        grid: [{ type: 1 }, null, null, { type: 1 }],
+      }),
+      expected: [{ type: 1 }, { type: 1 }, null, null],
     },
     {
       name: 'pieces to down',
-      gravity: 'down',
-      expected: [
-        [null, null],
-        [{'type': 1}, {'type': 1}]
-      ]
+      m3: new M3({
+        gravity: 'down',
+        width: 2,
+        height: 2,
+        grid: [{ type: 1 }, null, null, { type: 1 }],
+      }),
+      expected: [null, null, { type: 1 }, { type: 1 }],
     },
     {
       name: 'pieces to left',
-      gravity: 'left',
-      expected: [
-        [{'type': 1}, null],
-        [{'type': 1}, null]
-      ]
+      m3: new M3({
+        gravity: 'left',
+        width: 2,
+        height: 2,
+        grid: [{ type: 1 }, null, null, { type: 1 }],
+      }),
+      expected: [{ type: 1 }, null, { type: 1 }, null],
     },
     {
       name: 'pieces to right',
-      gravity: 'right',
-      expected: [
-        [null, {'type': 1}],
-        [null, {'type': 1}]
-      ]
+      m3: new M3({
+        gravity: 'right',
+        width: 2,
+        height: 2,
+        grid: [{ type: 1 }, null, null, { type: 1 }],
+      }),
+      expected: [null, { type: 1 }, null, { type: 1 }],
     },
   ];
 
-  cases.forEach((c) => test(c.name, () => expect(m3.applyGravity(grid, c.gravity)).toEqual(c.expected)));
+  tests.forEach(({ name, m3, expected }) =>
+    test(name, () => {
+      m3.applyGravity();
+      expect(m3.grid).toEqual(expected);
+    }),
+  );
 });
 
 describe('fill void', () => {
-  const grid = [
-    [{type: 1}, null],
-    [{type: 1}, {type: 1}]
-  ];
+  const m3 = new M3({
+    grid: [{ type: 1 }, null, { type: 1 }, { type: 1 }],
+  });
 
-  const types = 5;
+  m3.fillVoid();
 
-  test('no void pieces', () => expect(m3.fillVoid(grid, types)).not.toEqual(expect.arrayContaining([null])));
+  test('no void pieces', () =>
+    expect(m3.grid).not.toEqual(expect.arrayContaining([null])));
 });
 
 describe('create level', () => {
-  const grid = m3.createLevel({
-    rows: 6,
-    cols: 6,
-    types: 5
-  });
+  const m3 = new M3();
+  m3.createLevel();
 
-  test('grid does not contain matches', () => expect(m3.getMatches(grid)).toEqual([]));
-  test('grid has available moves', () => expect(m3.getMoves(grid)).not.toHaveLength(0));
+  test('grid does not contain matches', () =>
+    expect(m3.getMatches()).toEqual([]));
+  test('grid has available moves', () =>
+    expect(m3.getMoves()).not.toHaveLength(0));
 });

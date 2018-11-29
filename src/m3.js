@@ -1,281 +1,338 @@
 // @flow
 import type {
-  Level,
   Grid,
   Gravity,
   Piece,
   Coord,
   Move,
   Match,
-  Pattern
-} from './m3.types'
+  Pattern,
+} from './m3.types';
 
-const PATTERNS: Array<Pattern> = [
-  {mustHave: [{row: 0, col: 1}, {row: 0, col: 2}], needOne: [{row: 0, col: -1}, {row: -1, col: 0}, {row: 1, col: 0}]},
-  {mustHave: [{row: 0, col: -1}, {row: 0, col: -2}], needOne: [{row: 0, col: 1}, {row: -1, col: 0}, {row: 1, col: 0}]},
-  {mustHave: [{row: 1, col: 0}, {row: 2, col: 0}], needOne: [{row: -1, col: 0}, {row: 0, col: -1}, {row: 0, col: 1}]},
-  {mustHave: [{row: -1, col: 0}, {row: -2, col: 0}], needOne: [{row: 1, col: 0}, {row: 0, col: -1}, {row: 0, col: 1}]},
-  {mustHave: [{row: 0, col: -1}, {row: 0, col: 1}], needOne: [{row: -1, col: 0}, {row: 1, col: 0}]},
-  {mustHave: [{row: -1, col: 0}, {row: 1, col: 0}], needOne: [{row: 0, col: -1}, {row: 0, col: 1}]}
-];
-
-const forEach = (grid: Grid, cb: (Coord, ?Piece) => any): void => {
-  for (let row = 0; row < grid.length; row++) {
-    for (let col = 0; col < grid[row].length; col++) {
-      cb({row, col}, grid[row][col]);
-    }
+(function(root: any, factory) {
+  if (typeof module === 'object' && module.exports) {
+    // CommonJS
+    module.exports = factory();
+  } else {
+    // Browser
+    root.m3 = factory();
   }
-};
+})(this, () => {
+  class M3 {
+    grid: Grid;
+    gravity: Gravity;
+    width: number;
+    height: number;
+    typesCount: number;
+    patterns: Array<Pattern>;
 
-const copyGrid = (grid: Grid): Grid => grid.map((row) => [...row]);
+    constructor({
+      grid = [],
+      height = 6,
+      width = 6,
+      typesCount = 5,
+      gravity = 'down',
+    } = {}) {
+      this.grid = grid;
+      this.width = width;
+      this.height = height;
+      this.gravity = gravity;
+      this.typesCount = typesCount;
+      this.patterns = [
+        {
+          mustHave: [{ y: 0, x: 1 }, { y: 0, x: 2 }],
+          needOne: [{ y: 0, x: -1 }, { y: -1, x: 0 }, { y: 1, x: 0 }],
+        },
+        {
+          mustHave: [{ y: 0, x: -1 }, { y: 0, x: -2 }],
+          needOne: [{ y: 0, x: 1 }, { y: -1, x: 0 }, { y: 1, x: 0 }],
+        },
+        {
+          mustHave: [{ y: 1, x: 0 }, { y: 2, x: 0 }],
+          needOne: [{ y: -1, x: 0 }, { y: 0, x: -1 }, { y: 0, x: 1 }],
+        },
+        {
+          mustHave: [{ y: -1, x: 0 }, { y: -2, x: 0 }],
+          needOne: [{ y: 1, x: 0 }, { y: 0, x: -1 }, { y: 0, x: 1 }],
+        },
+        {
+          mustHave: [{ y: 0, x: -1 }, { y: 0, x: 1 }],
+          needOne: [{ y: -1, x: 0 }, { y: 1, x: 0 }],
+        },
+        {
+          mustHave: [{ y: -1, x: 0 }, { y: 1, x: 0 }],
+          needOne: [{ y: 0, x: -1 }, { y: 0, x: 1 }],
+        },
+      ];
+    }
 
-const getRandomPiece = (types: number): Piece => ({
-  type: Math.floor(Math.random() * types) + 1
-});
+    // helpers
 
-export const getPiece = (grid: Grid, coord: Coord, offset?: Coord = {row: 0, col: 0}): Piece | void => {
-  const row = grid[coord.row + offset.row];
+    setGrid(grid: Grid) {
+      this.grid = grid;
+    }
 
-  return row && row[coord.col + offset.col];
-};
+    coordToIdx({ y, x }: Coord) {
+      const idx = y * this.width + x;
+      if (y !== Math.floor(idx / this.width)) return -1;
 
-export const isNeighbor = (c1: Coord, c2: Coord): boolean => {
-  const dr = c1.row - c2.row;
-  const dc = c1.col - c2.col;
+      return idx;
+    }
 
-  return Boolean(
-    // if vertical neighbors
-    Math.abs(dr) <= 1 &&
-    // if horizontal neighbors
-    Math.abs(dc) <= 1 &&
-    // cross pieces are not neighbors
-    Math.abs(dr + dc) === 1
-  );
-};
+    idxToCoord(idx: number) {
+      const y = Math.floor(idx / this.width);
+      const x = idx % this.width;
 
-export const isEqualType = (grid: Grid, c1: Coord, c2: Coord): boolean => {
-  const p1 = getPiece(grid, c1);
-  const p2 = getPiece(grid, c2);
+      return { y, x };
+    }
 
-  return Boolean(p1 && p2 && p1.type === p2.type);
-};
+    forEach(cb: (Coord, Piece, number) => any) {
+      this.grid.forEach((piece, idx) => {
+        cb(this.idxToCoord(idx), this.grid[idx], idx);
+      });
+    }
 
-export const getMoves = (grid: Grid): Array<Move> => {
-  const moves = [];
+    generateRandomPiece(): Piece {
+      return {
+        type: Math.floor(Math.random() * this.typesCount) + 1,
+      };
+    }
 
-  forEach(grid, (coord) => {
-    PATTERNS.forEach((pattern) => {
-      let type;
+    isNeighbor(c1: Coord, c2: Coord): boolean {
+      const dr = c1.y - c2.y;
+      const dc = c1.x - c2.x;
 
-      const checkPossibleMatch = pattern.mustHave.every((offset) => {
-        const piece = getPiece(grid, coord, offset);
+      return Boolean(
+        // if vertical are neighbors
+        Math.abs(dr) <= 1 &&
+          // if horizontal are neighbors
+          Math.abs(dc) <= 1 &&
+          // cross pieces are not neighbors
+          Math.abs(dr + dc) === 1,
+      );
+    }
 
-        if (piece) {
-          if (type === undefined) {
-            type = piece.type;
-          }
+    // Methods
 
-          return type === piece.type;
-        }
+    getPiece(coord: Coord, offset?: Coord = { y: 0, x: 0 }): ?Piece {
+      const idx = this.coordToIdx({
+        y: coord.y + offset.y,
+        x: coord.x + offset.x,
       });
 
-      if (checkPossibleMatch) {
-        return pattern.needOne.forEach((offset) => {
-          const coord2 = {row: coord.row + offset.row, col: coord.col + offset.col};
-          const piece = getPiece(grid, coord2);
+      if (~idx) return this.grid[idx];
+    }
 
-          if (piece && type === piece.type) {
-            moves.push({from: coord, to: coord2});
+    getMoves(): Array<Move> {
+      const moves = [];
+
+      this.forEach(coord => {
+        this.patterns.forEach(pattern => {
+          let type;
+
+          const checkPossibleMatch = pattern.mustHave.every(offset => {
+            const piece = this.getPiece(coord, offset);
+
+            if (piece) {
+              if (type === undefined) {
+                type = piece.type;
+              }
+
+              return type === piece.type;
+            }
+          });
+
+          if (checkPossibleMatch) {
+            return pattern.needOne.forEach(offset => {
+              const coord2 = { y: coord.y + offset.y, x: coord.x + offset.x };
+              const piece = this.getPiece(coord2);
+
+              if (piece && type === piece.type) {
+                moves.push({ from: coord, to: coord2 });
+              }
+            });
           }
-        })
+        });
+      });
+
+      return moves;
+    }
+
+    getMatches(): Array<Match> {
+      const matches = [];
+
+      // find horizontal matches
+      for (let y = 0; y < this.height; y++) {
+        let type = null;
+        let matchLength = 1;
+
+        for (let x = 0; x < this.width; x++) {
+          let check = false;
+
+          if (x === this.width - 1) {
+            check = true;
+          } else {
+            const p1 = this.getPiece({ y, x });
+            const p2 = this.getPiece({ y, x }, { y: 0, x: 1 });
+
+            if (p1 && p2 && p1.type === p2.type) {
+              type = p1.type;
+              matchLength += 1;
+            } else {
+              check = true;
+            }
+          }
+
+          if (check) {
+            if (matchLength >= 3) {
+              matches.push({
+                y,
+                x: x + 1 - matchLength,
+                type,
+                length: matchLength,
+                horizontal: true,
+              });
+            }
+
+            type = null;
+            matchLength = 1;
+          }
+        }
       }
-    })
-  });
 
-  return moves;
-};
+      // find vertical matches
+      for (let x = 0; x < this.width; x++) {
+        let type = null;
+        let matchLength = 1;
 
-export const getMatches = (grid: Grid): Array<Match> => {
-  const matches = [];
+        for (let y = 0; y < this.height; y++) {
+          let check = false;
 
-  // find horizontal matches
-  for (let row = 0; row < grid.length; row++) {
-    let type = null;
-    let matchLength = 1;
+          if (y === this.height) {
+            check = true;
+          } else {
+            const p1 = this.getPiece({ y, x });
+            const p2 = this.getPiece({ y, x }, { y: 1, x: 0 });
 
-    const colLength = grid[row].length;
+            if (p1 && p2 && p1.type === p2.type) {
+              type = p1.type;
+              matchLength += 1;
+            } else {
+              check = true;
+            }
+          }
 
-    for (let col = 0; col < colLength; col++) {
-      let check = false;
+          if (check) {
+            if (matchLength >= 3) {
+              matches.push({
+                y: y + 1 - matchLength,
+                x,
+                type,
+                length: matchLength,
+                horizontal: false,
+              });
+            }
 
-      if (col === colLength - 1) {
-        check = true;
-      } else {
-        const p1 = getPiece(grid, {row, col});
-        const p2 = getPiece(grid, {row, col}, {row: 0, col: 1});
+            type = null;
+            matchLength = 1;
+          }
+        }
+      }
 
-        if (p1 && p2 && p1.type === p2.type) {
-          type = p1.type;
-          matchLength += 1;
+      return matches;
+    }
+
+    removeMatches(matches: Array<Match>) {
+      matches.forEach(match => {
+        if (match.horizontal) {
+          for (let i = 0; i < match.length; i++) {
+            const idx = this.coordToIdx({
+              y: match.y,
+              x: match.x + i,
+            });
+
+            if (~idx) this.grid[idx] = null;
+          }
         } else {
-          check = true;
-        }
-      }
+          for (let i = 0; i < match.length; i++) {
+            const idx = this.coordToIdx({
+              y: match.y + i,
+              x: match.x,
+            });
 
-      if (check) {
-        if (matchLength >= 3) {
-          matches.push({
-            row,
-            col: col + 1 - matchLength,
-            type,
-            length: matchLength,
-            horizontal: true
-          });
+            if (~idx) this.grid[idx] = null;
+          }
         }
-
-        type = null;
-        matchLength = 1;
-      }
+      });
     }
-  }
 
-  // find vertical matches
-  for (let col = 0; col < grid[0].length; col++) {
-    const rowLength = grid.length;
-    let type = null;
-    let matchLength = 1;
+    swap(move: Move) {
+      const to = this.grid[this.coordToIdx(move.to)];
 
-    for (let row = 0; row < rowLength; row++) {
-      let check = false;
-
-      if (row === grid.length) {
-        check = true;
-      } else {
-        const p1 = getPiece(grid, {row, col});
-        const p2 = getPiece(grid, {row, col}, {row: 1, col: 0});
-
-        if (p1 && p2 && p1.type === p2.type) {
-          type = p1.type;
-          matchLength += 1;
-        } else {
-          check = true;
-        }
-      }
-
-      if (check) {
-        if (matchLength >= 3) {
-          matches.push({
-            row: row + 1 - matchLength,
-            col,
-            type,
-            length: matchLength,
-            horizontal: false
-          });
-        }
-
-        type = null;
-        matchLength = 1;
-      }
+      this.grid[this.coordToIdx(move.to)] = this.grid[
+        this.coordToIdx(move.from)
+      ];
+      this.grid[this.coordToIdx(move.from)] = to;
     }
-  }
 
-  return matches;
-};
-
-export const removeMatches = (grid: Grid, matches: Array<Match>): Grid => {
-  const gridCopy = copyGrid(grid);
-
-  matches.forEach((match) => {
-    if (match.horizontal) {
-      for (let i = 0; i < match.length; i++) {
-        gridCopy[match.row][match.col + i] = null;
-      }
-    } else {
-      for (let i = 0; i < match.length; i++) {
-        gridCopy[match.row + i][match.col] = null;
-      }
-    }
-  });
-
-  return gridCopy;
-};
-
-export const swap = (grid: Grid, move: Move): Grid => {
-  const gridCopy = copyGrid(grid);
-
-  gridCopy[move.to.row][move.to.col] = grid[move.from.row][move.from.col];
-  gridCopy[move.from.row][move.from.col] = grid[move.to.row][move.to.col];
-
-  return gridCopy;
-};
-
-export const applyGravity = (grid: Grid, gravity: Gravity = 'down'): Grid => {
-  let gridCopy = copyGrid(grid);
-
-  const offset = {
-    up: {col: 0, row: 1},
-    down: {col: 0, row: -1},
-    left: {col: 1, row: 0},
-    right: {col: -1, row: 0}
-  };
-
-  forEach(grid, ({row, col}) => {
-    const move = {
-      from: {row, col},
-      to: {
-        row: row + offset[gravity].row,
-        col: col + offset[gravity].col
-      }
-    };
-
-    let p1 = getPiece(gridCopy, move.from);
-    let p2 = getPiece(gridCopy, move.to);
-
-    while (p1 === null && p2) {
-      gridCopy = swap(gridCopy, move);
-
-      move.from = Object.assign({}, move.to);
-      move.to = {
-        row: move.from.row + offset[gravity].row,
-        col: move.from.col + offset[gravity].col
+    applyGravity() {
+      const offset = {
+        up: { x: 0, y: 1 },
+        down: { x: 0, y: -1 },
+        left: { x: 1, y: 0 },
+        right: { x: -1, y: 0 },
       };
 
-      p1 = getPiece(gridCopy, move.from);
-      p2 = getPiece(gridCopy, move.to);
+      this.forEach(({ y, x }) => {
+        const move = {
+          from: { y, x },
+          to: {
+            y: y + offset[this.gravity].y,
+            x: x + offset[this.gravity].x,
+          },
+        };
+
+        let p1 = this.getPiece(move.from);
+        let p2 = this.getPiece(move.to);
+
+        while (p1 === null && p2) {
+          this.swap(move);
+
+          move.from = {...move.to};
+          move.to = {
+            y: move.from.y + offset[this.gravity].y,
+            x: move.from.x + offset[this.gravity].x,
+          };
+
+          p1 = this.getPiece(move.from);
+          p2 = this.getPiece(move.to);
+        }
+      });
     }
-  });
 
-  return gridCopy;
-};
-
-export const fillVoid = (grid: Grid, types: number): Grid => {
-  const gridCopy = copyGrid(grid);
-
-  forEach(gridCopy, ({row, col}, piece) => {
-    if (piece === null) {
-      gridCopy[row][col] = getRandomPiece(types);
+    fillVoid() {
+      this.forEach((_, piece, idx) => {
+        if (piece === null) {
+          this.grid[idx] = this.generateRandomPiece();
+        }
+      });
     }
-  });
 
-  return gridCopy;
-};
+    createLevel() {
+      const create = () => {
+        const grid = [];
+        for (let idx = 0; idx < this.width * this.height; idx++) {
+          grid[idx] = this.generateRandomPiece();
+        }
 
-export const createLevel = ({rows, cols, types}: Level): Grid => {
-  const grid = [];
+        this.setGrid(grid);
+      };
 
-  const loop = () => {
-    for (let row = 0; row < rows; row++) {
-      grid[row] = [];
-
-      for (let col = 0; col < cols; col++) {
-        grid[row][col] = getRandomPiece(types);
+      while (this.getMoves().length === 0 || this.getMatches().length > 0) {
+        create();
       }
     }
-  };
-
-  while (getMoves(grid).length === 0 || getMatches(grid).length > 0) {
-    loop();
   }
 
-  return grid;
-};
+  return M3;
+});

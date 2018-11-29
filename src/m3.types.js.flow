@@ -1,11 +1,5 @@
 // @flow
-export type Level = {
-  rows: number,
-  cols: number,
-  types: number
-}
-
-export type Grid = Array<Array<Piece>>
+export type Grid = Array<Piece>
 
 export type Gravity = | "up" | "down" | "left" | "right"
 
@@ -14,8 +8,8 @@ export type Piece = null | {
 }
 
 export type Coord = {
-  row: number,
-  col: number
+  y: number,
+  x: number
 }
 
 export type Move = {
@@ -24,8 +18,8 @@ export type Move = {
 }
 
 export type Match = {
-  row: number,
-  col: number,
+  y: number,
+  x: number,
   length: number,
   type: number | null,
   horizontal: boolean
