@@ -298,7 +298,7 @@ import type {
         while (p1 === null && p2) {
           this.swap(move);
 
-          move.from = {...move.to};
+          move.from = { ...move.to };
           move.to = {
             y: move.from.y + offset[this.gravity].y,
             x: move.from.x + offset[this.gravity].x,
